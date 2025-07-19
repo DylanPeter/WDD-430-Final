@@ -1,0 +1,38 @@
+/* HomePage.css */
+.homepage {
+    padding: 2rem;
+    font-family: 'Helvetica Neue', sans-serif;
+    background: #f8f9fa;
+    min-height: 100vh;
+  }
+  
+  .homepage h1 {
+    font-size: 2rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .album-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 1.5rem;
+  }
+  
+  .album-card {
+    background: white;
+    padding: 1rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    transition: transform 0.2s ease;
+    text-align: center;
+  }
+  
+  .album-card:hover {
+    transform: translateY(-5px);
+  }
+  
+  .album-card img {
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+  }

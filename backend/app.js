@@ -1,7 +1,11 @@
-// backend/app.js
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
+require('dotenv').config();
+
+const albumRoutes = require('./routes/album.routes');
+const reviewRoutes = require('./routes/review.routes');
+const userRoutes = require('./routes/user.routes');
 
 const app = express();
 
@@ -9,16 +13,21 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// DB Connection
-mongoose.connect('mongodb://localhost:27017/music-review', {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-}).then(() => console.log('MongoDB connected'))
-  .catch(err => console.error('MongoDB connection error:', err));
+// Connect to MongoDB
+const mongoose = require('mongoose');
+require('dotenv').config();
 
-// Routes (you'll add real ones later)
+mongoose.connect(process.env.MONGO_URI)
+  .then(() => console.log('MongoDB connected'))
+  .catch(err => console.error('MongoDB error:', err));
+
+// API Routes
+app.use('/api/albums', albumRoutes);
+app.use('/api/reviews', reviewRoutes);
+app.use('/api/users', userRoutes);
+
 app.get('/', (req, res) => {
-  res.send('Music Review API is running');
-});
+    res.send('Music Review API is running 🎵');
+  });
 
 module.exports = app;
