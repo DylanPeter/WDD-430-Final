@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
+import './albumPage.css'
 
 function AlbumPage() {
   const { id } = useParams();
@@ -41,55 +42,58 @@ function AlbumPage() {
   if (!album) return <div>Loading album...</div>;
 
   return (
-    <div style={{ padding: '2rem', fontFamily: 'Arial, sans-serif' }}>
+    <div className="album-page">
+  <div className="album-info">
+    <img src={album.coverImage} alt={album.title} />
+    <div className="album-meta">
       <h1>{album.title}</h1>
       <p><em>{album.artist}</em></p>
-      <img
-        src={album.coverImage}
-        alt={album.title}
-        style={{ width: '200px', borderRadius: '8px', marginBottom: '1rem' }}
+    </div>
+  </div>
+
+  <hr />
+
+  <div className="review-form">
+    <h2>Leave a Review</h2>
+    <form onSubmit={handleSubmit}>
+      <label className='rating'>Rating (1–5):</label>
+      <select
+        value={form.rating}
+        onChange={e => setForm({ ...form, rating: e.target.value })}
+      >
+        <option value="" className='select'>Select</option>
+        {[1, 2, 3, 4, 5].map(r => (
+          <option key={r} value={r}>{r}</option>
+        ))}
+      </select>
+
+      <label className='comment'>Comment:</label>
+      <textarea
+        rows="4"
+        value={form.comment}
+        onChange={e => setForm({ ...form, comment: e.target.value })}
       />
 
-      <hr />
+      <button type="submit" className='submit-review'>Submit Review</button>
+    </form>
+  </div>
 
-      <h2>Leave a Review</h2>
-      <form onSubmit={handleSubmit}>
-        <label>Rating (1–5):</label><br />
-        <select
-          value={form.rating}
-          onChange={e => setForm({ ...form, rating: e.target.value })}
-        >
-          <option value="">Select</option>
-          {[1, 2, 3, 4, 5].map(r => (
-            <option key={r} value={r}>{r}</option>
-          ))}
-        </select><br /><br />
+  <hr />
 
-        <label>Comment:</label><br />
-        <textarea
-          rows="4"
-          cols="40"
-          value={form.comment}
-          onChange={e => setForm({ ...form, comment: e.target.value })}
-        /><br /><br />
-
-        <button type="submit">Submit Review</button>
-      </form>
-
-      <hr />
-
-      <h2>Reviews</h2>
-      {reviews.length === 0 && <p>No reviews yet.</p>}
-      <div className="reviews-container">
-        {reviews.map((r, i) => (
-          <div key={i} className="review-card">
-            <div className="stars">{'⭐️'.repeat(r.rating)}</div>
-            <p className="comment">"{r.comment}"</p>
-            <p className="date">{new Date(r.date).toLocaleDateString()}</p>
-          </div>
-        ))}
-      </div>
+  <div className="reviews-section">
+    <h2>Reviews</h2>
+    {reviews.length === 0 && <p className="no-reviews">No reviews yet.</p>}
+    <div className="reviews-list">
+      {reviews.map((r, i) => (
+        <div key={i} className="review-card">
+          <div className="stars">{'⭐️'.repeat(r.rating)}</div>
+          <p className="comment">"{r.comment}"</p>
+          <p className="date">{new Date(r.date).toLocaleDateString()}</p>
+        </div>
+      ))}
     </div>
+  </div>
+</div>
   );
 }
 

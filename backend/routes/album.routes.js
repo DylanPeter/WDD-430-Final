@@ -1,100 +1,69 @@
 const express = require('express');
 const router = express.Router();
+const axios = require('axios');
+const Album = require('../models/album.model'); // adjust path as needed
+const mongoose = require('mongoose')
 
-// Temporary mock data
-let albums = [
-    {
-      _id: '4',
-      title: 'Fearless (Taylor’s Version)',
-      artist: 'Taylor Swift',
-      genre: 'Pop',
-      releaseDate: '2021-04-09',
-      coverImage: 'https://upload.wikimedia.org/wikipedia/en/9/9c/Taylor_Swift_-_Fearless_%28Taylor%27s_Version%29.png'
-    },
-    {
-      _id: '5',
-      title: 'DAMN.',
-      artist: 'Kendrick Lamar',
-      genre: 'Hip-Hop',
-      releaseDate: '2017-04-14',
-      coverImage: 'https://upload.wikimedia.org/wikipedia/en/5/51/Kendrick_Lamar_-_Damn.png'
-    },
-    {
-      _id: '6',
-      title: 'Melodrama',
-      artist: 'Lorde',
-      genre: 'Alternative',
-      releaseDate: '2017-06-16',
-      coverImage: 'https://upload.wikimedia.org/wikipedia/en/3/3a/Lorde_-_Melodrama.png'
-    },
-    {
-      _id: '7',
-      title: 'After Hours',
-      artist: 'The Weeknd',
-      genre: 'R&B',
-      releaseDate: '2020-03-20',
-      coverImage: 'https://upload.wikimedia.org/wikipedia/en/a/a0/The_Weeknd_-_After_Hours.png'
-    },
-    {
-      _id: '8',
-      title: 'evermore',
-      artist: 'Taylor Swift',
-      genre: 'Indie Pop',
-      releaseDate: '2020-12-11',
-      coverImage: 'https://upload.wikimedia.org/wikipedia/en/e/ec/Taylor_Swift_-_Evermore.png'
-    },
-    {
-      _id: '9',
-      title: 'good kid, m.A.A.d city',
-      artist: 'Kendrick Lamar',
-      genre: 'Hip-Hop',
-      releaseDate: '2012-10-22',
-      coverImage: 'https://upload.wikimedia.org/wikipedia/en/0/05/KendrickGKMC.jpg'
-    },
-    {
-      _id: '10',
-      title: 'folklore',
-      artist: 'Taylor Swift',
-      genre: 'Indie Folk',
-      releaseDate: '2020-07-24',
-      coverImage: 'https://upload.wikimedia.org/wikipedia/en/f/f8/Taylor_Swift_-_Folklore.png'
-    },
-    {
-      _id: '11',
-      title: 'CTRL',
-      artist: 'SZA',
-      genre: 'R&B',
-      releaseDate: '2017-06-09',
-      coverImage: 'https://upload.wikimedia.org/wikipedia/en/b/bf/SZA_-_Ctrl_cover.png'
-    },
-    {
-      _id: '12',
-      title: 'SOUR',
-      artist: 'Olivia Rodrigo',
-      genre: 'Pop Rock',
-      releaseDate: '2021-05-21',
-      coverImage: 'https://upload.wikimedia.org/wikipedia/en/2/2f/Olivia_Rodrigo_-_SOUR.png'
-    },
-    {
-      _id: '13',
-      title: 'Blonde',
-      artist: 'Frank Ocean',
-      genre: 'R&B',
-      releaseDate: '2016-08-20',
-      coverImage: 'https://upload.wikimedia.org/wikipedia/en/a/a0/Blonde_-_Frank_Ocean.jpeg'
-    }
-  ];
+// Import Deezer album by ID and save to DB
+// album.routes.js or similar
+router.post('/import', async (req, res) => {
+  const { name } = req.body;
+  if (!name) return res.status(400).json({ message: 'Album name required' });
+
+  try {
+    const response = await axios.get(`https://api.deezer.com/search/album?q=${encodeURIComponent(name)}`);
+    const result = response.data.data[0];
+
+    if (!result) return res.status(404).json({ message: 'No album found on Deezer.' });
+
+    const existing = await Album.findOne({ deezerId: result.id });
+    if (existing) return res.status(409).json({ message: 'Album already exists' });
+
+    const newAlbum = new Album({
+      title: result.title,
+      artist: result.artist.name,
+      genre: 'Unknown',
+      releaseDate: result.release_date || new Date('2000-01-01'),
+      coverImage: result.cover_medium,
+      deezerId: result.id
+    });
+
+    await newAlbum.save();
+    res.status(201).json(newAlbum);
+  } catch (err) {
+    console.error('Deezer Import Error:', err.message);
+    res.status(500).json({ message: 'Failed to import album' });
+  }
+});
 
 // GET all albums
-router.get('/', (req, res) => {
-  res.json(albums);
+router.get('/', async (req, res) => {
+  try {
+    const albums = await Album.find();
+    res.json(albums);
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to fetch albums.' });
+  }
 });
 
 // GET single album
-router.get('/:id', (req, res) => {
-  const album = albums.find(a => a._id === req.params.id);
-  if (!album) return res.status(404).json({ message: 'Album not found' });
-  res.json(album);
-});
+router.get('/:id', async (req, res) => {
+  const { id } = req.params;
 
+  // Check if it's a valid MongoDB ObjectId
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({ message: 'Invalid album ID format.' });
+  }
+
+  try {
+    const album = await Album.findById(id);
+    if (!album) {
+      return res.status(404).json({ message: 'Album not found' });
+    }
+    res.json(album);
+  } catch (err) {
+    console.error('Error fetching album:', err.message);
+    res.status(500).json({ message: 'Error fetching album.' });
+  }
+});
 module.exports = router;

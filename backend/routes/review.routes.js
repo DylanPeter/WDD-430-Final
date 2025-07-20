@@ -1,7 +1,7 @@
 // routes/review.routes.js
 const express = require('express');
 const router = express.Router();
-const Review = require('../models/Review');
+const Review = require('../models/review.model');
 
 // GET all reviews for a specific album
 router.get('/album/:albumId', async (req, res) => {
