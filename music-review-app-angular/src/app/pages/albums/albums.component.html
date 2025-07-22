@@ -1,0 +1,46 @@
+<div class="album-page" *ngIf="album">
+    <div class="album-info">
+      <img [src]="album.coverImage" alt="{{ album.title }}" />
+      <div class="album-meta">
+        <h1>{{ album.title }}</h1>
+        <p>{{ album.artist }}</p>
+      </div>
+    </div>
+  
+    <div class="review-form">
+      <h2 class="submit-review">Submit a Review</h2>
+      <form (ngSubmit)="submitReview()">
+        <textarea
+          [(ngModel)]="newReview.comment"
+          name="comment"
+          placeholder="Write your thoughts..."
+          required
+        ></textarea>
+  
+        <select [(ngModel)]="newReview.rating" name="rating" required>
+            <option disabled value="">Select a rating (1–5)</option>
+            <option *ngFor="let r of [1, 2, 3, 4, 5]" [value]="r">{{ r }}</option>
+          </select>
+
+        <button type="submit">Submit Review</button>
+  
+        <p class="success" *ngIf="importMessage === 'Review submitted successfully!'">{{ importMessage }}</p>
+        <p class="error" *ngIf="importMessage !== 'Review submitted successfully!'">{{ importMessage }}</p>
+      </form>
+    </div>
+  
+    <div class="reviews-section">
+      <h2>Reviews</h2>
+      <div *ngIf="reviews.length > 0; else noReviews" class="reviews-list">
+        <div *ngFor="let review of reviews" class="review-card">
+          <p><strong>{{ review.userId?.name || 'Anonymous' }}</strong></p>
+          <div class="stars">⭐️ {{ review.rating }}/5</div>
+          <div class="comment">{{ review.comment }}</div>
+          <div class="date">{{ review.date | date: 'mediumDate' }}</div>
+        </div>
+      </div>
+      <ng-template #noReviews>
+        <p class="no-reviews">No reviews yet.</p>
+      </ng-template>
+    </div>
+  </div>

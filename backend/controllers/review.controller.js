@@ -1,44 +1,49 @@
 const Review = require('../models/review.model');
 
-// GET all reviews for an album
 exports.getReviewsByAlbum = async (req, res) => {
   try {
-    const reviews = await Review.find({ albumId: req.params.albumId }).populate('userId', 'username');
+    const reviews = await Review.find({ albumId: req.params.albumId })
+      .populate('userId', 'name')
+      .populate('albumId', 'title'); 
     res.json(reviews);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ message: err.message });
+  }
+};
+exports.getReviewsByUser = async (req, res) => {
+  try {
+    const reviews = await Review.find({ userId: req.params.userId })
+      .populate('userId', 'name')
+      .populate('albumId', 'title');
+    res.json(reviews);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
   }
 };
 
-// POST new review
 exports.createReview = async (req, res) => {
-  try {
-    const newReview = new Review(req.body);
-    const saved = await newReview.save();
-    res.status(201).json(saved);
-  } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
-};
+  const { albumId, rating, comment, userId } = req.body;
 
-// PUT update review
-exports.updateReview = async (req, res) => {
-  try {
-    const updated = await Review.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    if (!updated) return res.status(404).json({ message: 'Review not found' });
-    res.json(updated);
-  } catch (err) {
-    res.status(400).json({ error: err.message });
+  if (!albumId || !rating || !comment || !userId) {
+    return res.status(400).json({ message: 'All fields are required' });
   }
-};
 
-// DELETE review
-exports.deleteReview = async (req, res) => {
   try {
-    const deleted = await Review.findByIdAndDelete(req.params.id);
-    if (!deleted) return res.status(404).json({ message: 'Review not found' });
-    res.json({ message: 'Review deleted' });
+    const review = new Review({
+      albumId,
+      rating,
+      comment,
+      userId,
+      date: new Date(),
+    });
+
+    const savedReview = await review.save();
+
+    // Re-fetch the review with populated user name
+    const populatedReview = await Review.findById(savedReview._id).populate('userId', 'name');
+
+    res.status(201).json(populatedReview);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ message: err.message });
   }
 };

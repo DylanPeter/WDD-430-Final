@@ -1,0 +1,38 @@
+<div class="profile-container">
+  <h2>Profile</h2>
+
+  <div *ngIf="!isEditing">
+    <p><strong>Name:</strong> {{ user.name }}</p>
+    <p><strong>Email:</strong> {{ user.email }}</p>
+    <button (click)="isEditing = true">Edit</button>
+  </div>
+
+  <div *ngIf="isEditing">
+    <form (ngSubmit)="saveProfile()">
+      <label>
+        Name:
+        <input type="text" [(ngModel)]="user.name" name="name" required />
+      </label>
+      <br />
+      <label>
+        Email:
+        <input type="email" [(ngModel)]="user.email" name="email" required />
+      </label>
+      <br />
+      <button type="submit">Save</button>
+      <button type="button" (click)="isEditing = false">Cancel</button>
+    </form>
+  </div>
+  <h3>Your Reviews</h3>
+  <div *ngIf="reviews.length > 0; else noReviews" class="reviews-grid">
+    <div *ngFor="let review of reviews" class="review-card">
+      <p><strong>Album:</strong> {{ review.albumId?.title || 'Unknown' }}</p>
+      <p><strong>Rating:</strong> {{ review.rating }} / 5</p>
+      <p><strong>Comment:</strong> "{{ review.comment }}"</p>
+      <p class="review-date"><strong>Date:</strong> {{ review.date | date: 'mediumDate' }}</p>
+    </div>
+  </div>
+  
+  <ng-template #noReviews>
+    <p>No reviews yet.</p>
+  </ng-template>
