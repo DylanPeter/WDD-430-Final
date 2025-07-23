@@ -15,19 +15,19 @@ export interface Album {
   providedIn: 'root'
 })
 export class AlbumService {
-  private apiUrl = 'http://localhost:5100/api'; // or your deployed URL
+  private baseUrl = 'http://localhost:5100/api'; // or your deployed URL
 
   constructor(private http: HttpClient) {}
 
   getAlbumById(id: string) {
-    return this.http.get<Album>(`${this.apiUrl}/albums/${id}`);
+    return this.http.get<Album>(`${this.baseUrl}/albums/${id}`);
   }
 
-  getAlbums(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/albums`);
+  getAlbums(): Observable<any> {
+    return this.http.get(`${this.baseUrl}/albums`);
   }
 
-  importAlbum(title: string): Observable<any> {
-    return this.http.post(`${this.apiUrl}/albums/import`, { title });
+  importAlbum(albumName: string): Observable<any> {
+    return this.http.post(`${this.baseUrl}/albums/import`, { name: albumName });
   }
 }
